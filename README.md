@@ -63,7 +63,7 @@ You can install Postman via this website: https://www.postman.com/downloads/
     -   [x] Commit: `Implement subscribe function in Notification controller.`
     -   [x] Commit: `Implement unsubscribe function in Notification service.`
     -   [x] Commit: `Implement unsubscribe function in Notification controller.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-2" questions in this README.
+    -   [x] Write answers of your learning module's "Reflection Publisher-2" questions in this README.
 -   **STAGE 3: Implement notification mechanism**
     -   [ ] Commit: `Implement update method in Subscriber model to send notification HTTP requests.`
     -   [ ] Commit: `Implement notify function in Notification service to notify each Subscriber.`
@@ -90,5 +90,19 @@ Using DashMap (map/dictionary) rather than Vec (list) is necessary in this case 
  In the case of the List of Subscribers (`SUBSCRIBERS`) static variable, we used the DashMap external library for thread-safe HashMap implementation. In the current implementation, we're already using a form of the Singleton pattern through the `lazy_static` macro, which ensures `SUBSCRIBERS` is initialized only once when first accessed. What DashMap provides is thread-safe concurrent access with fine-grained locking, which is essential in web application where multiple threads might modify the subscribers list simultaneously. If we tried to implement our own thread-safe HashMap with a traditional Singleton approach, we would have to handle the synchronization manually using Mutex or RwLock, which would be more complex and potentially less performant than DashMap's specialized implementation.
 
 #### Reflection Publisher-2
+
+>In the Model-View Controller (MVC) compound pattern, there is no “Service” and “Repository”. Model in MVC covers both data storage and business logic. Explain based on your understanding of design principles, why we need to separate “Service” and “Repository” from a Model?
+
+Separating "Service" and "Repository" from a "Model" addresses the Single Responsibility Principle (SRP) more effectively than traditional MVC. While MVC combines data storage and business logic in the Model component, this often leads to bloated Model classes that become difficult to maintain as applications grow. By extracting the Repository layer, we create a dedicated component focused solely on data persistence concerns, making database interactions more manageable and testable in isolation. Similarly, moving business logic to a Service layer allows us to encapsulate complex operations and workflows separately from data structures. This separation creates clearer boundaries between components, improves testability through easier mocking, and enables better reuse across different parts of the application. It also facilitates maintenance by allowing changes to one layer (like switching database technologies) without affecting others.
+
+>What happens if we only use the Model? Explain your imagination on how the interactions between each model (Program, Subscriber, Notification) affect the code complexity for each model?
+
+If we only used the Model without separating Service and Repository layers, the complexity of each model would increase dramatically. For instance, our Program model would need to handle not just its own data structure but also business logic for product management, subscriber notifications, and persistence logic for database operations. This would create tight coupling between models, as Program would need direct knowledge of Subscriber and Notification models to manage their relationships. Similarly, Subscriber would need to know how to store itself and also how to interact with Notification objects. Each model would become a massive class with multiple responsibilities, violating the Single Responsibility Principle. When we needed to modify notification logic, we would need to dive into the Subscriber model, risking unintended side effects on subscription data handling. Testing would become more challenging as we couldn't isolate business logic from data persistence concerns. Additionally, as our application grew, these models would continue to expand with more methods and properties, making them increasingly difficult to understand and maintain. The lack of clear boundaries would create a web of interdependencies that would make future changes risky and time-consuming.
+
+>Have you explored more about Postman? Tell us how this tool helps you to test your current work. You might want to also list which features in Postman you are interested in or feel like it is helpful to help your Group Project or any of your future software engineering projects.
+
+Postman has been incredibly helpful for testing our BambangShop notification system. It allows us to easily send HTTP requests to both our publisher and subscriber applications without having to build a frontend interface. We can quickly create, save, and organize different API requests for subscribing to product types, creating products, and triggering notifications. The collection feature has been particularly useful as we can group related requests together and run them in sequence to test the entire notification flow.
+
+I'm especially interested in Postman's environment variables feature, which lets us switch between testing against different server instances (like localhost:8000 for the main app and localhost:8001 for the receiver app). The request and response visualization helps us quickly identify issues in our API implementation.
 
 #### Reflection Publisher-3

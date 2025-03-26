@@ -69,7 +69,7 @@ You can install Postman via this website: https://www.postman.com/downloads/
     -   [x] Commit: `Implement notify function in Notification service to notify each Subscriber.`
     -   [x] Commit: `Implement publish function in Program service and Program controller.`
     -   [x] Commit: `Edit Product service methods to call notify after create/delete.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-3" questions in this README.
+    -   [x] Write answers of your learning module's "Reflection Publisher-3" questions in this README.
 
 ## Your Reflections
 This is the place for you to write reflections:
@@ -106,3 +106,21 @@ Postman has been incredibly helpful for testing our BambangShop notification sys
 I'm especially interested in Postman's environment variables feature, which lets us switch between testing against different server instances (like localhost:8000 for the main app and localhost:8001 for the receiver app). The request and response visualization helps us quickly identify issues in our API implementation.
 
 #### Reflection Publisher-3
+
+>Observer Pattern has two variations: Push model (publisher pushes data to subscribers) and Pull model (subscribers pull data from publisher). In this tutorial case, which variation of Observer Pattern that we use?
+
+In this tutorial case, we're using the Push model of the Observer pattern. This is evident in how our notification system works. When events occur in the main BambangShop application (such as product creation, deletion, or promotion), the publisher actively sends HTTP POST requests to all subscribers who have registered for that product type. The publisher (main app) maintains a list of subscribers and their URLs, and it's the publisher's responsibility to notify each subscriber by pushing the notification data to them through the Subscriber's `update()` method. The subscribers don't need to periodically check for updates, they simply wait to receive notifications through their /receive endpoint. This implementation follows the classic Push model where the initiative for communication comes from the publisher side, and the data flows directly from publisher to subscribers without subscribers having to request it.
+
+>What are the advantages and disadvantages of using the other variation of Observer Pattern for this tutorial case? (example: if you answer Q1 with Push, then imagine if we used Pull)
+
+In a Pull model, subscribers would periodically query the main application to check for updates related to their subscribed product types.
+
+The advantages would include reduced load on the main application during high-traffic periods since it wouldn't need to send notifications to potentially hundreds of subscribers simultaneously. This would make the system more scalable as the responsibility for checking updates shifts to the subscribers. It would also be more resilient to temporary subscriber unavailability since subscribers could retrieve missed notifications when they come back online.
+
+However, the disadvantages would be significant. Subscribers would need to continuously poll the main application, creating unnecessary network traffic when no updates are available. This polling would introduce latency in notification delivery since subscribers would only learn about updates during their next polling cycle rather than immediately. We would also need to implement a more complex state tracking system in the main application to keep track of which notifications each subscriber has already seen. Additionally, the distributed nature of our current application with multiple receiver instances would be more complicated to manage, as each instance would need to maintain its own polling schedule and state tracking.
+
+>Explain what will happen to the program if we decide to not use multi-threading in the notification process.
+
+If we decided not to use multi-threading in the notification process, the program's performance and user experience would significantly deteriorate. Without multi-threading, each notification would be processed sequentially in the same thread that handles the original request (like creating or deleting a product). This means that if we have 100 subscribers to notify, the application would need to wait for each HTTP request to complete before starting the next one, and before returning a response to the user who initiated the action.
+
+This sequential processing would lead to extremely slow response times. For example, if each notification takes just 500ms to send, notifying 100 subscribers would add 50 seconds to the response time. During this period, the main thread would be blocked, making the application unresponsive to other incoming requests. Users would experience this as the application "hanging" after creating or deleting products. In worst-case scenarios with network timeouts or slow subscriber responses, the main application could appear completely frozen for minutes at a time.
